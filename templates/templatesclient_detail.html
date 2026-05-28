@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{client.name}}{% endblock %}
+{% block content %}
+<div class="flex gap-3 mb-6">
+    <a href="{{url_for('clients')}}" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-xl font-bold transition">← رجوع</a>
+    <a href="{{url_for('add_edit_client',cid=client.id)}}" class="bg-amber-500 hover:bg-amber-600 px-6 py-3 rounded-xl font-bold transition">✏️ تعديل</a>
+    <form action="{{url_for('delete_client',cid=client.id)}}" method="POST" onsubmit="return confirm('هل أنت متأكد؟')">
+        <button class="btn-danger px-6 py-3 rounded-xl font-bold transition">🗑️ حذف</button>
+    </form>
+</div>
+
+<div class="card overflow-hidden mb-8">
+    <div class="bg-indigo-600 p-8 flex items-center gap-6">
+        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600">{{client.name[0]}}</div>
+        <div>
+            <h1 class="text-3xl font-bold">{{client.name}} {% if client.is_vip %}<span class="bg-amber-500 px-3 py-1 rounded-lg text-sm align-middle">⭐ VIP</span>{% endif %}</h1>
+            <p class="text-indigo-200 text-base mt-1">📅 {{client.created_at}}</p>
+        </div>
+    </div>
+    <div class="p-8 space-y-4">
+        <div class="bg-gray-800/50 rounded-xl p-5 flex items-center gap-4"><span class="text-gray-400 font-bold w-32">📱 الهاتف</span><span class="text-lg">{{client.phone or 'غير محدد'}}</span></div>
+        <div class="bg-gray-800/50 rounded-xl p-5 flex items-center gap-4"><span class="text-gray-400 font-bold w-32">📧 البريد</span><span class="text-lg">{{client.email or 'غير محدد'}}</span></div>
+        {% if client.notes %}<div class="bg-gray-800/50 rounded-xl p-5"><span class="text-gray-400 font-bold block mb-2">📝 ملاحظات</span><span class="text-lg">{{client.notes}}</span></div>{% endif %}
+    </div>
+</div>
+
+<div class="card p-8">
+    <h2 class="text-2xl font-bold mb-6">🌐 المواقع والخدمات ({{websites|length}})</h2>
+    {% if websites %}
+    <div class="space-y-4">
+        {% for w in websites %}
+        <div class="card p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-cyan-400">🌐 {{w.site_name}}</h3>
+                {% if w.category %}<span class="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-lg text-sm font-bold">{{w.category}}</span>{% endif %}
+            </div>
+            <div class="space-y-3">
+                {% if w.site_url %}
+                <div class="flex items-center gap-3 bg-gray-800/50 rounded-lg p-4">
+                    <span class="text-gray-400 font-bold w-28">🔗 الرابط</span>
+                    <span class="flex-1 text-base break-all">{{w.site_url}}</span>
+                    <button onclick="copyText('{{w.site_url}}')" class="btn-primary px-3 py-2 rounded-lg text-sm">📋</button>
+                </div>
+                {% endif %}
+                {% if w.login_email %}
+                <div class="flex items-center gap-3 bg-gray-800/50 rounded-lg p-4">
+                    <span class="text-gray-400 font-bold w-28">📧 الإيميل</span>
+                    <span class="flex-1 text-base">{{w.login_email}}</span>
+                    <button onclick="copyText('{{w.login_email}}')" class="btn-primary px-3 py-2 rounded-lg text-sm">📋</button>
+                </div>
+                {% endif %}
+                {% if w.decrypted_password %}
+                <div class="flex items-center gap-3 bg-gray-800/50 rounded-lg p-4">
+                    <span class="text-gray-400 font-bold w-28">🔒 كلمة المرور</span>
+                    <span class="flex-1 text-base" id="pw_{{w.id}}">••••••••</span>
+                    <button onclick="const el=document.getElementById('pw_{{w.id}}');el.textContent=el.textContent==='••••••••'?'{{w.decrypted_password}}':'••••••••'" class="bg-gray-700 px-3 py-2 rounded-lg text-sm">👁️</button>
+                    <button onclick="copyText('{{w.decrypted_password}}')" class="btn-primary px-3 py-2 rounded-lg text-sm">📋</button>
+                </div>
+                {% endif %}
+                {% if w.notes %}<p class="text-gray-400 text-sm mt-2">📝 {{w.notes}}</p>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-10 text-lg">لا توجد مواقع مسجلة</p>
+    {% endif %}
+</div>
+{% endblock %}

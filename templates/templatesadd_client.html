@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{'تعديل عميل' if client else 'إضافة عميل'}}{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">{{'✏️ تعديل عميل' if client else '➕ إضافة عميل جديد'}}</h1>
+
+<form method="POST" class="space-y-6">
+    <div class="card p-8">
+        <h2 class="text-2xl font-bold mb-6">👤 البيانات الأساسية</h2>
+        <div class="space-y-5">
+            <div><label class="block text-base font-bold mb-2">الاسم الكامل *</label>
+                <input name="name" value="{{client.name if client else ''}}" placeholder="أدخل اسم العميل" required></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label class="block text-base font-bold mb-2">📱 الهاتف</label>
+                    <input name="phone" value="{{client.phone if client else ''}}" placeholder="05xxxxxxxx"></div>
+                <div><label class="block text-base font-bold mb-2">📧 البريد</label>
+                    <input name="email" value="{{client.email if client else ''}}" placeholder="email@example.com"></div>
+            </div>
+            <div><label class="block text-base font-bold mb-2">📝 ملاحظات</label>
+                <textarea name="notes" rows="3" placeholder="ملاحظات...">{{client.notes if client else ''}}</textarea></div>
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="is_vip" value="1" {{'checked' if client and client.is_vip}} class="w-6 h-6 accent-amber-500">
+                <span class="text-base font-bold">⭐ عميل VIP</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="card p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">🌐 المواقع والخدمات</h2>
+            <button type="button" onclick="addSiteField()" class="bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-xl font-bold transition">➕ إضافة موقع</button>
+        </div>
+        <div id="sitesContainer">
+            {% if websites %}
+            {% for w in websites %}
+            <div class="card p-6 mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-cyan-400 font-bold text-lg">🌐 موقع {{loop.index}}</span>
+                    <button type="button" onclick="this.closest('.card').remove()" class="btn-danger px-4 py-2 rounded-lg text-sm font-bold">🗑️ حذف</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-bold mb-2">اسم الموقع *</label><input name="site_name[]" value="{{w.site_name}}"></div>
+                    <div><label class="block text-sm font-bold mb-2">الرابط</label><input name="site_url[]" value="{{w.site_url or ''}}"></div>
+                    <div><label class="block text-sm font-bold mb-2">إيميل الدخول</label><input name="login_email[]" value="{{w.login_email or ''}}"></div>
+                    <div><label class="block text-sm font-bold mb-2">كلمة المرور</label>
+                        <div class="flex gap-2"><input name="password[]" id="epwd_{{loop.index}}" type="password" value="{{w.decrypted_password}}">
+                        <button type="button" onclick="togglePassword('epwd_{{loop.index}}',this)" class="bg-gray-700 px-3 rounded-lg whitespace-nowrap">👁️</button></div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-bold mb-2">الفئة</label>
+                        <select name="category[]">{% for cat in ['شخصي','عمل','سوشيال ميديا','بنك','أخرى'] %}<option {{'selected' if w.category==cat}}>{{cat}}</option>{% endfor %}</select></div>
+                    <div><label class="block text-sm font-bold mb-2">ملاحظات</label><textarea name="site_notes[]" rows="2">{{w.notes or ''}}</textarea></div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="card p-6 mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-cyan-400 font-bold text-lg">🌐 موقع 1</span>
+                    <button type="button" onclick="this.closest('.card').remove()" class="btn-danger px-4 py-2 rounded-lg text-sm font-bold">🗑️ حذف</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-bold mb-2">اسم الموقع *</label><input name="site_name[]" placeholder="Google, Facebook..."></div>
+                    <div><label class="block text-sm font-bold mb-2">الرابط</label><input name="site_url[]" placeholder="https://..."></div>
+                    <div><label class="block text-sm font-bold mb-2">إيميل الدخول</label><input name="login_email[]" placeholder="email@site.com"></div>
+                    <div><label class="block text-sm font-bold mb-2">كلمة المرور</label>
+                        <div class="flex gap-2"><input name="password[]" id="pwd_new" type="password" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword('pwd_new',this)" class="bg-gray-700 px-3 rounded-lg whitespace-nowrap">👁️</button></div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-bold mb-2">الفئة</label>
+                        <select name="category[]"><option>شخصي</option><option>عمل</option><option>سوشيال ميديا</option><option>بنك</option><option>أخرى</option></select></div>
+                    <div><label class="block text-sm font-bold mb-2">ملاحظات</label><textarea name="site_notes[]" rows="2" placeholder="ملاحظات..."></textarea></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex gap-4">
+        <button type="submit" class="btn-success px-10 py-4 rounded-xl text-lg font-bold transition">💾 حفظ</button>
+        <a href="{{url_for('clients')}}" class="btn-danger px-10 py-4 rounded-xl text-lg font-bold transition">❌ إلغاء</a>
+    </div>
+</form>
+{% endblock %}

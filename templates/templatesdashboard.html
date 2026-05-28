@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">لوحة التحكم</h1>
+<p class="text-gray-400 text-lg mb-8">نظرة عامة على النظام</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    {% set items = [('👥','إجمالي العملاء',stats[0],'indigo'),('🌐','إجمالي المواقع',stats[1],'cyan'),('⭐','عملاء VIP',stats[2],'amber')] %}
+    {% for icon,label,val,color in items %}
+    <div class="card p-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-full h-1 bg-{{color}}-500"></div>
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-{{color}}-500/20 rounded-2xl flex items-center justify-center text-3xl">{{icon}}</div>
+            <div>
+                <p class="text-gray-400 text-base">{{label}}</p>
+                <p class="text-4xl font-bold mt-1">{{val}}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">📋 آخر العملاء</h2>
+        <a href="{{url_for('clients')}}" class="text-indigo-400 font-bold hover:text-indigo-300 text-base">عرض الكل ←</a>
+    </div>
+    {% if recent_clients %}
+    <div class="space-y-3">
+        {% for c in recent_clients %}
+        <a href="{{url_for('client_detail',cid=c.id)}}" class="card p-5 flex justify-between items-center hover:border-indigo-500/50 block">
+            <div>
+                <span class="text-lg font-bold">{{c.name}}</span>
+                {% if c.is_vip %}<span class="text-amber-400 text-sm mr-2">⭐ VIP</span>{% endif %}
+                <p class="text-gray-400 text-sm mt-1">{{c.phone or '—'}} · {{c.email or '—'}}</p>
+            </div>
+            <i class="fas fa-chevron-left text-gray-500"></i>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-10 text-lg">لا يوجد عملاء بعد</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}نظام إدارة العملاء{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        body { background: #0a0e1a; color: #f1f5f9; }
+        .glass { background: rgba(26,32,53,0.95); backdrop-filter: blur(12px); border: 1px solid #2d3748; }
+        .card { background: #1a2035; border: 1px solid #2d3748; border-radius: 16px; transition: all 0.3s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+        .btn-primary { background: #6366f1; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .sidebar-link { transition: all 0.2s; border-right: 4px solid transparent; }
+        .sidebar-link:hover, .sidebar-link.active { background: #232942; border-right-color: #6366f1; }
+        input, textarea, select {
+            background: #131829 !important; border: 1px solid #2d3748 !important;
+            color: #f1f5f9 !important; border-radius: 10px !important; padding: 12px 16px !important;
+            font-size: 15px !important; width: 100%; outline: none;
+        }
+        input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0e1a; }
+        ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+
+{% if session.get('user') %}
+<!-- الشريط الجانبي -->
+<aside class="w-72 glass min-h-screen fixed right-0 top-0 z-50 flex flex-col hidden md:flex">
+    <div class="p-8 text-center border-b border-gray-700">
+        <div class="w-16 h-16 bg-indigo-600 rounded-full mx-auto flex items-center justify-center mb-3 text-3xl">👥</div>
+        <h1 class="text-xl font-bold">Client Manager</h1>
+        <p class="text-gray-400 text-sm mt-1">إدارة العملاء والمواقع</p>
+    </div>
+    <nav class="flex-1 py-6 space-y-1 px-3">
+        <a href="{{ url_for('dashboard') }}" class="sidebar-link flex items-center gap-3 px-5 py-4 rounded-xl text-base font-bold {% if request.endpoint=='dashboard' %}active{% endif %}">
+            <i class="fas fa-home w-6"></i> الرئيسية
+        </a>
+        <a href="{{ url_for('clients') }}" class="sidebar-link flex items-center gap-3 px-5 py-4 rounded-xl text-base font-bold {% if request.endpoint in ('clients','client_detail','add_edit_client') %}active{% endif %}">
+            <i class="fas fa-users w-6"></i> العملاء
+        </a>
+        <a href="{{ url_for('add_edit_client') }}" class="sidebar-link flex items-center gap-3 px-5 py-4 rounded-xl text-base font-bold">
+            <i class="fas fa-plus w-6"></i> إضافة عميل
+        </a>
+        <a href="{{ url_for('search') }}" class="sidebar-link flex items-center gap-3 px-5 py-4 rounded-xl text-base font-bold {% if request.endpoint=='search' %}active{% endif %}">
+            <i class="fas fa-search w-6"></i> الاستعلام
+        </a>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+        <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-5 py-4 rounded-xl text-base font-bold text-red-400 hover:bg-red-500/10 transition">
+            <i class="fas fa-sign-out-alt w-6"></i> خروج
+        </a>
+    </div>
+</aside>
+
+<!-- زر القائمة للموبايل -->
+<button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"
+        class="md:hidden fixed top-4 right-4 z-[60] bg-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- قائمة الموبايل -->
+<div id="mobileMenu" class="hidden fixed inset-0 z-[55] bg-black/90 md:hidden">
+    <div class="p-6 space-y-3 mt-16">
+        <a href="{{ url_for('dashboard') }}" class="block p-4 rounded-xl glass text-lg font-bold">🏠 الرئيسية</a>
+        <a href="{{ url_for('clients') }}" class="block p-4 rounded-xl glass text-lg font-bold">👥 العملاء</a>
+        <a href="{{ url_for('add_edit_client') }}" class="block p-4 rounded-xl glass text-lg font-bold">➕ إضافة عميل</a>
+        <a href="{{ url_for('search') }}" class="block p-4 rounded-xl glass text-lg font-bold">🔍 الاستعلام</a>
+        <a href="{{ url_for('logout') }}" class="block p-4 rounded-xl bg-red-500/20 text-red-400 text-lg font-bold">🚪 خروج</a>
+        <button onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="w-full p-4 rounded-xl glass text-lg">✕ إغلاق</button>
+    </div>
+</div>
+
+<main class="flex-1 md:mr-72 p-6 md:p-10">
+{% else %}
+<main class="w-full min-h-screen flex items-center justify-center p-6">
+{% endif %}
+
+    <!-- الرسائل -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-6 space-y-3">
+        {% for cat, msg in messages %}
+        <div class="p-4 rounded-xl text-base font-bold {% if cat=='success' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30{% else %}bg-red-500/20 text-red-400 border border-red-500/30{% endif %}">
+            {{ msg }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<script>
+function togglePassword(inputId, btnEl) {
+    const inp = document.getElementById(inputId);
+    if (inp.type === 'password') { inp.type = 'text'; btnEl.textContent = '🙈'; }
+    else { inp.type = 'password'; btnEl.textContent = '👁️'; }
+}
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => alert('✅ تم النسخ'));
+}
+let siteCount = {{ websites|length if websites is defined else 1 }};
+function addSiteField() {
+    siteCount++;
+    const container = document.getElementById('sitesContainer');
+    const div = document.createElement('div');
+    div.className = 'card p-6 mb-4';
+    div.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-cyan-400 font-bold text-lg">🌐 موقع ${siteCount}</span>
+            <button type="button" onclick="this.closest('.card').remove()" class="btn-danger px-4 py-2 rounded-lg text-sm font-bold">🗑️ حذف</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div><label class="block text-sm font-bold mb-2">اسم الموقع *</label><input name="site_name[]" placeholder="Google, Facebook..."></div>
+            <div><label class="block text-sm font-bold mb-2">الرابط</label><input name="site_url[]" placeholder="https://..."></div>
+            <div><label class="block text-sm font-bold mb-2">إيميل الدخول</label><input name="login_email[]" placeholder="email@site.com"></div>
+            <div><label class="block text-sm font-bold mb-2">كلمة المرور</label>
+                <div class="flex gap-2"><input name="password[]" id="pwd_${siteCount}" type="password" placeholder="••••••••">
+                <button type="button" onclick="togglePassword('pwd_${siteCount}',this)" class="bg-gray-700 px-3 rounded-lg whitespace-nowrap">👁️</button></div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-bold mb-2">الفئة</label>
+                <select name="category[]"><option>شخصي</option><option>عمل</option><option>سوشيال ميديا</option><option>بنك</option><option>أخرى</option></select></div>
+            <div><label class="block text-sm font-bold mb-2">ملاحظات</label><textarea name="site_notes[]" rows="2" placeholder="ملاحظات..."></textarea></div>
+        </div>`;
+    container.appendChild(div);
+}
+</script>
+</body>
+</html>

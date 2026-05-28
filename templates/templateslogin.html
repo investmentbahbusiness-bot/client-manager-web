@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}تسجيل الدخول{% endblock %}
+{% block content %}
+<div class="w-full max-w-md">
+    <div class="card p-10">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-indigo-600 rounded-full mx-auto flex items-center justify-center text-4xl mb-4">🔐</div>
+            <h1 class="text-3xl font-bold mb-2">مرحباً بك</h1>
+            <p class="text-gray-400 text-lg">سجّل الدخول للمتابعة</p>
+        </div>
+        <form method="POST" class="space-y-5">
+            <div>
+                <label class="block text-base font-bold mb-2">اسم المستخدم</label>
+                <input name="username" placeholder="admin" required autofocus>
+            </div>
+            <div>
+                <label class="block text-base font-bold mb-2">كلمة المرور</label>
+                <input name="password" type="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="w-full btn-primary py-4 rounded-xl text-lg font-bold transition">تسجيل الدخول</button>
+        </form>
+        <p class="text-center text-gray-500 text-sm mt-6">الافتراضي: admin / admin123</p>
+    </div>
+</div>
+{% endblock %}

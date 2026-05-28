@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}الاستعلام{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">🔍 البحث والاستعلام</h1>
+
+<form method="GET" class="card p-6 mb-8 flex gap-3">
+    <input name="q" value="{{query}}" placeholder="ابحث بالاسم أو الهاتف أو البريد..." class="flex-1 text-lg" autofocus>
+    <button type="submit" class="btn-primary px-10 rounded-xl font-bold text-lg">🔍 بحث</button>
+</form>
+
+{% if query %}
+<p class="text-gray-400 text-lg mb-4">تم العثور على {{results|length}} نتيجة</p>
+{% if results %}
+<div class="space-y-4">
+    {% for c in results %}
+    <div class="card p-6">
+        <div class="flex justify-between items-start mb-3">
+            <h3 class="text-xl font-bold">{{c.name}} {% if c.is_vip %}<span class="text-amber-400 text-sm">⭐ VIP</span>{% endif %}</h3>
+            <span class="text-cyan-400 font-bold text-sm">{{c.website_count}} موقع</span>
+        </div>
+        <p class="text-gray-400">📱 {{c.phone or '—'}} · 📧 {{c.email or '—'}}</p>
+        <a href="{{url_for('client_detail',cid=c.id)}}" class="inline-block mt-4 btn-primary px-6 py-3 rounded-xl font-bold transition">👁️ عرض التفاصيل</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-16"><p class="text-6xl mb-4">❌</p><p class="text-gray-400 text-xl">لا توجد نتائج</p></div>
+{% endif %}
+{% else %}
+<div class="text-center py-16"><p class="text-6xl mb-4">🔍</p><p class="text-gray-400 text-xl">ابدأ البحث للعثور على العملاء</p></div>
+{% endif %}
+{% endblock %}
